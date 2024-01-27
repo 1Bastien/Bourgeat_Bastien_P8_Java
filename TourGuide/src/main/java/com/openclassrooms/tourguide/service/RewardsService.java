@@ -2,17 +2,21 @@ package com.openclassrooms.tourguide.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Service;
+
+import com.openclassrooms.tourguide.user.User;
+import com.openclassrooms.tourguide.user.UserReward;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
 import rewardCentral.RewardCentral;
-import com.openclassrooms.tourguide.user.User;
-import com.openclassrooms.tourguide.user.UserReward;
 
 @Service
 public class RewardsService {
@@ -22,12 +26,17 @@ public class RewardsService {
 	private int defaultProximityBuffer = 10;
 	private int proximityBuffer = defaultProximityBuffer;
 	private int attractionProximityRange = 200;
-	private final GpsUtil gpsUtil;
+
 	private final RewardCentral rewardsCentral;
 
+	private List<Attraction> attractions;
+
+	private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
 	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
-		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
+
+		attractions = gpsUtil.getAttractions();
 	}
 
 	public void setProximityBuffer(int proximityBuffer) {
@@ -40,8 +49,6 @@ public class RewardsService {
 
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-
-		List<Attraction> attractions = gpsUtil.getAttractions();
 
 		for (VisitedLocation visitedLocation : userLocations) {
 			for (Attraction attraction : attractions) {
@@ -64,8 +71,12 @@ public class RewardsService {
 		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
 	}
 
-	public int getRewardPoints(Attraction attraction, UUID user) {
-		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user);
+	public CompletableFuture<Integer> getRewardPoints(Attraction attraction, UUID user) {
+		CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+			return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user);
+		}, executorService);
+
+		return future;
 	}
 
 	public double getDistance(Location loc1, Location loc2) {

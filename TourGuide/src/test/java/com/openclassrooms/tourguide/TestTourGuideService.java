@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -21,6 +24,13 @@ import tripPricer.Provider;
 
 public class TestTourGuideService {
 
+	private ExecutorService executorService = Executors.newCachedThreadPool();
+
+	@AfterEach
+	public void tearDown() {
+		executorService.shutdownNow();
+	}
+
 	@Test
 	public void getUserLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -29,7 +39,7 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user).join();
 		tourGuideService.tracker.stopTracking();
 		assertTrue(visitedLocation.userId.equals(user.getUserId()));
 	}
@@ -85,7 +95,7 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user).join();
 
 		tourGuideService.tracker.stopTracking();
 
@@ -100,7 +110,7 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user).join();
 
 		List<NearbyAttractionsDto> attractions = tourGuideService.getNearbyAttractions(visitedLocation);
 

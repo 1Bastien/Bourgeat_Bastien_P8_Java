@@ -77,6 +77,10 @@ public class User {
 		}
 	}
 
+	public void addUserRewards(List<UserReward> userRewards) {
+		userRewards.forEach(this::addUserReward);
+	}
+
 	public List<UserReward> getUserRewards() {
 		return userRewards;
 	}
