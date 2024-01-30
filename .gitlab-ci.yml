@@ -3,17 +3,25 @@ stages:
   - test
   - quality
   - package
+  
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 cache:
+  key: "$CI_PROJECT_DIR"
   paths:
-    - .m2/repository
-  key: "$CI_JOB_NAME"
-
+    - .m2/repository/
+    
 build_job:
   stage: build
-  image: eclipse-temurin:17-jdk-alpine
+  image: maven:3.9.6-eclipse-temurin-17-alpine
   script:
-    - ./mvnw compile
+    - mkdir -p .m2/repository
+    - cp libs/*.jar .m2/repository
+    - mvn install:install-file -Dfile=libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar
+    - mvn install:install-file -Dfile=libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=rewardCentral -Dversion=1.0.0 -Dpackaging=jar
+    - mvn install:install-file -Dfile=libs/TripPricer.jar -DgroupId=tripPricer -DartifactId=tripPricer -Dversion=1.0.0 -Dpackaging=jar
+    - mvn compile
       -Dhttps.protocols=TLSv1.2
       -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
@@ -23,9 +31,9 @@ build_job:
 
 test_job:
   stage: test
-  image: eclipse-temurin:17-jdk-alpine
+  image: maven:3.9.6-eclipse-temurin-17-alpine
   script:
-    - ./mvnw test
+    - mvn test
       -Dhttps.protocols=TLSv1.2
       -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
@@ -53,15 +61,20 @@ code_quality_job:
 
 package_job:
   stage: package
-  image: eclipse-temurin:17-jdk-alpine
+  image: maven:3.9.6-eclipse-temurin-17-alpine
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
   script:
-    - ./mvnw install -PbuildDocker -DskipTests=true -DpushImage
+    - apk add --no-cache docker-cli
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - mvn install -DskipTests=true -DpushImage
       -Dhttps.protocols=TLSv1.2
       -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
       -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
       -Dorg.slf4j.simpleLogger.showDateTime=true
       -Djava.awt.headless=true
       --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
