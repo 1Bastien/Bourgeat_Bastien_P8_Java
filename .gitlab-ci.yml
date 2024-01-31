@@ -78,7 +78,6 @@ package_job:
       --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-    - cp target/tourguide-1.0.0.jar $CI_PROJECT_DIR/artifacts/tourguide-1.0.0.jar
   artifacts:
     paths:
       - artifacts/tourguide-1.0.0.jar
