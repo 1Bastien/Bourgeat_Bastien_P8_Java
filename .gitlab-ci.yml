@@ -2,8 +2,8 @@ stages:
   - build
   - test
   - quality
-  - package_docker
   - package_jar
+  - package_docker
   
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
