@@ -2,7 +2,8 @@ stages:
   - build
   - test
   - quality
-  - package
+  - package_docker
+  - package_jar
   
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -59,8 +60,24 @@ code_quality_job:
     paths:
       - codequality-results/
 
-package_job:
-  stage: package
+package_jar_job:
+  stage: package_jar
+  image: maven:3.9.6-eclipse-temurin-17-alpine
+  script:
+    - mvn package 
+      -DskipTests=true
+      -Dhttps.protocols=TLSv1.2
+      -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+      -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
+      -Dorg.slf4j.simpleLogger.showDateTime=true
+      -Djava.awt.headless=true
+      --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
+  artifacts:
+    paths:
+      - target/*.jar
+
+package_docker_job:
+  stage: package_docker
   image: maven:3.9.6-eclipse-temurin-17-alpine
   services:
     - docker:dind
@@ -78,6 +95,3 @@ package_job:
       --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-  artifacts:
-    paths:
-      - artifacts/tourguide-1.0.0.jar
