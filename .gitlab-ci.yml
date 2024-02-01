@@ -86,12 +86,5 @@ package_docker_job:
   script:
     - apk add --no-cache docker-cli
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - mvn install -DskipTests=true -DpushImage
-      -Dhttps.protocols=TLSv1.2
-      -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
-      -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN
-      -Dorg.slf4j.simpleLogger.showDateTime=true
-      -Djava.awt.headless=true
-      --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
