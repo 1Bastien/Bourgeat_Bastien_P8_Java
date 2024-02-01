@@ -117,35 +117,25 @@ public class TourGuideService {
 						attraction -> rewardsService.getDistance(attraction, visitedLocation.location)))
 				.limit(5).collect(Collectors.toList());
 
-		ExecutorService executorService = Executors.newFixedThreadPool(sortedAttractions.size());
-		List<CompletableFuture<Void>> futures = new ArrayList<>();
-
 		for (Attraction attraction : sortedAttractions) {
-			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-				NearbyAttractionsDto nearbyAttractionsDto = new NearbyAttractionsDto();
-				nearbyAttractionsDto.setAttractionName(attraction.attractionName);
-				nearbyAttractionsDto.setAttractionLatitude(attraction.latitude);
-				nearbyAttractionsDto.setAttractionLongitude(attraction.longitude);
+			NearbyAttractionsDto nearbyAttractionsDto = new NearbyAttractionsDto();
+			nearbyAttractionsDto.setAttractionName(attraction.attractionName);
+			nearbyAttractionsDto.setAttractionLatitude(attraction.latitude);
+			nearbyAttractionsDto.setAttractionLongitude(attraction.longitude);
 
-				nearbyAttractionsDto.setUserLatitude(visitedLocation.location.latitude);
-				nearbyAttractionsDto.setUserLongitude(visitedLocation.location.longitude);
+			nearbyAttractionsDto.setUserLatitude(visitedLocation.location.latitude);
+			nearbyAttractionsDto.setUserLongitude(visitedLocation.location.longitude);
 
-				double distanceToUser = rewardsService.getDistance(attraction, visitedLocation.location);
-				nearbyAttractionsDto.setDistanceToUser(distanceToUser);
+			double distanceToUser = rewardsService.getDistance(attraction, visitedLocation.location);
+			nearbyAttractionsDto.setDistanceToUser(distanceToUser);
 
-				int rewardPoints = rewardsService.getRewardPoints(attraction, visitedLocation.userId).join();
-				nearbyAttractionsDto.setRewardPoints(rewardPoints);
+			int rewardPoints = rewardsService.getRewardPoints(attraction, visitedLocation.userId).join();
+			nearbyAttractionsDto.setRewardPoints(rewardPoints);
 
-				nearbyAttractionsDtos.add(nearbyAttractionsDto);
-			}, executorService);
+			nearbyAttractionsDtos.add(nearbyAttractionsDto);
 
-			futures.add(future);
 		}
 
-		CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-		allOf.join();
-
-		executorService.shutdown();
 		rewardsService.setDefaultProximityBuffer();
 
 		return new ArrayList<>(nearbyAttractionsDtos);
