@@ -1,5 +1,8 @@
 package com.openclassrooms.tourguide;
 
+import java.util.concurrent.ExecutorService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +13,9 @@ import com.openclassrooms.tourguide.service.RewardsService;
 @Configuration
 public class TourGuideModule {
 
+	@Autowired
+	private ExecutorService executorService;
+	
 	@Bean
 	GpsUtil getGpsUtil() {
 		return new GpsUtil();
@@ -17,7 +23,7 @@ public class TourGuideModule {
 
 	@Bean
 	RewardsService getRewardsService() {
-		return new RewardsService(getGpsUtil(), getRewardCentral());
+		return new RewardsService(getGpsUtil(), getRewardCentral(), executorService);
 	}
 
 	@Bean
