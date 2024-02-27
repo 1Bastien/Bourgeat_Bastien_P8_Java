@@ -1,12 +1,19 @@
-# Technologies
+# TourGuide - Projet Etudiant
 
-> Java 17  
-> Spring Boot 3.X  
-> JUnit 5  
+Ce projet vise non seulement à corriger les bugs, mais aussi à optimiser les performances d'une application, 
+en particulier avec le multi-threading, tout en mettant en place une pipeline d'intégration continue.
 
-# How to have gpsUtil, rewardCentral and tripPricer dependencies available ?
+Voici le lien vers le GitLab pour la pipeline d'intégration : 
+[Gitlab-Ci](https://gitlab.com/projet7842505/p8)
 
-> Run : 
-- mvn install:install-file -Dfile=/libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar  
-- mvn install:install-file -Dfile=/libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=rewardCentral -Dversion=1.0.0 -Dpackaging=jar  
-- mvn install:install-file -Dfile=/libs/TripPricer.jar -DgroupId=tripPricer -DartifactId=tripPricer -Dversion=1.0.0 -Dpackaging=jar
+## Contexte du Projet 
+
+*TourGuide fournit des informations touristiques et des réductions sur les spectacles et l'hébergement. 
+Elle connaît une croissance rapide du nombre d'utilisateurs, passant de quelques centaines à plus de 30 000 utilisateurs par jour, avec une prévision de 100 000 utilisateurs prochainement. En raison de cette croissance, l'application est devenue trop lente et a des problèmes de performance.*
+
+## Technologies Utilisées
+
+- **Java Spring**
+- **Docker**
+- **Gitlab-Ci**
+- **Jacoco & JUnit**
