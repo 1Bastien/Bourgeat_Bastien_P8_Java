@@ -17,3 +17,16 @@ Elle connaît une croissance rapide du nombre d'utilisateurs, passant de quelque
 - **Docker**
 - **Gitlab-Ci**
 - **Jacoco & JUnit**
+
+## Prérequis
+
+- Docker
+
+## Installation
+
+```bash
+docker pull registry.gitlab.com/projet7842505/p8:master
+```
+```
+docker run registry.gitlab.com/projet7842505/p8:master
+```
